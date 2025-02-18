@@ -90,5 +90,5 @@ public partial class Board
     }
     [GeneratedRegex(@"[a-c]")] private static partial Regex ColumnRegex();
     [GeneratedRegex(@"[1-3]")] private static partial Regex RowRegex();
-
+    public bool IsSpaceFreeAt(Vector2Int coords) => GetSymbolAt(coords) == FREE_SPACE;
 }

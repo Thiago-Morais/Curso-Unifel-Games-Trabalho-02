@@ -5,7 +5,7 @@
 // [/] Ao fazer as jogadas, o jogo deve verificar quem ganhou ou se deu velha.
 // [ ] Durante o jogo deve ser possível ver o placar dos jogadores, inclusive a quantidade de vezes que a Velha aconteceu.
 // [x] Também deve ser possível mostrar o tabuleiro do jogo após cada jogada! 
-// [ ] O jogo se encerra ao informar o valor 0.
+// [x] O jogo se encerra ao informar o valor 0.
 
 using static Util;
 using static System.Console;
@@ -14,6 +14,8 @@ public class TicTacToe
 {
     // Input, maybe extract into its own class
     public const string INPUT_EXIT = "0";
+    private const string DEFAULT_PLAYER_1_NAME = "Jogador 1";
+    private const string DEFAULT_PLAYER_2_NAME = "Jogador 2";
     string? input;
     public string? Input { get => input; set => input = value; }
 
@@ -24,6 +26,7 @@ public class TicTacToe
     List<Player> winnerHistory = new();
     GameStates currentState;
     Vector2Int cacheLastCoordsInput;
+    private Player currentWinner;
 
     enum GameStates
     {
@@ -148,13 +151,13 @@ Velha: {GetTiesCount()}";
                 currentState = GameStates.InputNamePlayer1;
                 return;
             case GameStates.InputNamePlayer1:
-                if (input == "") player1.SetName("Jogador 1");
-                else player1.SetName(input);
+                if (input != "") player1.SetName(input);
+                else player1.SetName(DEFAULT_PLAYER_1_NAME);
                 currentState = GameStates.InputNamePlayer2;
                 return;
             case GameStates.InputNamePlayer2:
-                if (input == "") player2.SetName("Jogador 2");
-                else player2.SetName(input);
+                if (input != "") player2.SetName(input);
+                else player2.SetName(DEFAULT_PLAYER_2_NAME);
                 currentState = GameStates.NewGame;
                 return;
             case GameStates.NewGame:
@@ -163,35 +166,44 @@ Velha: {GetTiesCount()}";
             case GameStates.GameTurn:
                 if (!Board.TryParseCoords(input, out Vector2Int coords))
                 {
-                    currentState = GameStates.InvalidInput;
                     cacheLastCoordsInput = coords;
+                    currentState = GameStates.InvalidInput;
                     return;
                 }
-                if (currentBoard.GetSymbolAt(coords) != Board.FREE_SPACE)
+                if (!currentBoard.IsSpaceFreeAt(coords))
                 {
                     currentState = GameStates.NonEmptySpace;
                     return;
                 }
+
                 currentBoard.SetElementOnBoard(coords, GetTurnPlayer().Symbol);
                 // Verify if there is a winner
                 if (currentBoard.Winner != null)
                 {
                     currentState = GameStates.WinnerScreen;
+                    return;
                 }
-                return;
+                else
+                {
+                    SwitchTurnPlayer();
+                    currentState = GameStates.GameTurn;
+                    return;
+                }
             case GameStates.WinnerScreen:
                 // Change current player
-                Player winner = GetWinner();
-                winner?.Win();
-                winnerHistory.Add(winner);
+                currentWinner = GetWinner();
+                currentWinner?.Win();
+                winnerHistory.Add(currentWinner);
 
-                SwitchTurnPlayer();
-                currentState = GameStates.GameTurn;
+                GetOtherPlayer(currentWinner);
+                currentState = GameStates.NewGame;
                 return;
             default:
                 return;
         }
     }
+    public Player GetTurnPlayer() => turnPlayerIndex == 1 ? player1 : player2;
+    public void SwitchTurnPlayer() => turnPlayerIndex = turnPlayerIndex == 1 ? 2 : 1;
     Player GetWinner()
     {
         if (currentBoard.Winner == player1.Symbol)
@@ -200,13 +212,5 @@ Velha: {GetTiesCount()}";
             return player2;
         return null;
     }
-
-    public Player GetTurnPlayer() => turnPlayerIndex == 1 ? player1 : player2;
-    public void SwitchTurnPlayer()
-    {
-        if (turnPlayerIndex == 1)
-            turnPlayerIndex = 2;
-        else
-            turnPlayerIndex = 1;
-    }
+    Player GetOtherPlayer(Player player) => player == player1 ? player2 : player1;
 }
