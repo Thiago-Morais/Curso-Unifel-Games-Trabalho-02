@@ -1,20 +1,22 @@
-
-public class Player
+namespace Curso_Unifel_Games_Trabalho_02
 {
-    string symbol;
-    string name;
-    int score;
-
-    public string Symbol => symbol;
-    public string Name => name;
-    public int WinCount => score;
-
-    public Player(string symbol, string name = null, int score = 0)
+    public class Player
     {
-        this.symbol = symbol;
-        this.name = name;
-        this.score = score;
+        readonly string symbol;
+        string name;
+        int score;
+
+        public string Symbol => symbol;
+        public string Name => name;
+        public int WinCount => score;
+
+        public Player(string symbol, string name = null, int score = 0)
+        {
+            this.symbol = symbol;
+            this.name = name;
+            this.score = score;
+        }
+        public void Win() => score++;
+        public void SetName(string name) => this.name = name;
     }
-    public void Win() => score++;
-    public void SetName(string name) => this.name = name;
 }

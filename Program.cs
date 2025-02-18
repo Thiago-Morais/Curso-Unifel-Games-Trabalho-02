@@ -7,6 +7,8 @@
 // Também deve ser possível mostrar o tabuleiro do jogo após cada jogada! 
 // O jogo se encerra ao informar o valor 0.
 
+using Curso_Unifel_Games_Trabalho_02;
+
 internal class Program
 {
     private static void Main(string[] args)

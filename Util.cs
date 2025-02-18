@@ -1,8 +1,11 @@
-public static class Util
+namespace Curso_Unifel_Games_Trabalho_02
 {
-    public static ConsoleKeyInfo WaitForAnyKey(string message = "\nAperte qualquer botão para continuar.")
+    public static class Util
     {
-        Console.Write(message);
-        return Console.ReadKey();
+        public static ConsoleKeyInfo WaitForAnyKey(string message = "\nAperte qualquer botão para continuar.")
+        {
+            Console.Write(message);
+            return Console.ReadKey();
+        }
     }
 }
