@@ -16,9 +16,10 @@ internal class Program
 
         do
         {
+            ticTacToe.PreProcessState();
             ticTacToe.Render();
             ticTacToe.HandleInput();
-            ticTacToe.ProcessAfter();
+            ticTacToe.ProcessInputAndStateChange();
         }
         while (ticTacToe.Input != TicTacToe.INPUT_EXIT);
 

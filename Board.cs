@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 public partial class Board
 {
     public const string FREE_SPACE = ".";
-    string[,] data = new string[3, 3] { { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE } };
+    readonly string[,] data = new string[3, 3] { { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE } };
     public static readonly (int, int)[][] WIN_CONDITIONS =
     [
         // Rows
@@ -34,14 +34,13 @@ public partial class Board
         data[coords.x, coords.y] = value;
         winner = CalculateWinnerSymbol();
     }
-
     string CalculateWinnerSymbol()
     {
         // Go over every win condition and return if there is a winner
         for (int i = 0; i < WIN_CONDITIONS.Length; i++)
         {
-            (int x, int y) firstWinCoord = WIN_CONDITIONS[i][0];
-            string possibleWinner = data[firstWinCoord.x, firstWinCoord.y];
+            (int x, int y) = WIN_CONDITIONS[i][0];
+            string possibleWinner = data[x, y];
             if (possibleWinner == FREE_SPACE) continue;
 
             for (int j = 1; j < WIN_CONDITIONS[i].Length; j++)
@@ -55,7 +54,14 @@ public partial class Board
         }
         return null;
     }
-
+    public bool HasGameEnded()
+    {
+        for (int i = 0; i < data.GetLength(0); i++)
+            for (int j = 0; j < data.GetLength(1); j++)
+                if (data[i, j] == FREE_SPACE)
+                    return false;
+        return true;
+    }
     public string GetSymbolAt(Vector2Int coords)
     {
         return data[coords.x, coords.y];
@@ -91,4 +97,5 @@ public partial class Board
     [GeneratedRegex(@"[a-c]")] private static partial Regex ColumnRegex();
     [GeneratedRegex(@"[1-3]")] private static partial Regex RowRegex();
     public bool IsSpaceFreeAt(Vector2Int coords) => GetSymbolAt(coords) == FREE_SPACE;
+    public static string FormatCoords(Vector2Int coords) => $"({(char)(coords.x + 'a')}, {(char)(coords.y + '1')})";
 }

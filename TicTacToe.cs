@@ -1,4 +1,3 @@
-
 // Trabalho #2 - Jogo da Velha
 // Desenvolva um jogo da Velha.
 //  O jogo da velha é jogado por dois jogadores, onde um vai ser o X e o outro o O.
@@ -16,15 +15,16 @@ public class TicTacToe
     public const string INPUT_EXIT = "0";
     private const string DEFAULT_PLAYER_1_NAME = "Jogador 1";
     private const string DEFAULT_PLAYER_2_NAME = "Jogador 2";
-    string? input;
-    public string? Input { get => input; set => input = value; }
+    string input;
+    public string Input { get => input; set => input = value; }
 
     Board currentBoard = new();
-    Player player1 = new("X");
-    Player player2 = new("O");
+    readonly Player player1 = new("X");
+    readonly Player player2 = new("O");
+    Player firstTurnPlayer;
     Player currentTurnPlayer;
     Player currentWinner;
-    List<Player> winnerHistory = new();
+    readonly List<Player> winnerHistory = [];
     GameStates currentState;
     Vector2Int cacheLastCoordsInput;
 
@@ -36,15 +36,40 @@ public class TicTacToe
         NewGame,
         GameTurn,
         InvalidInput,
+        TieScreen,
         WinnerScreen,
         NonEmptySpace,
     }
-
     public TicTacToe()
     {
-        currentTurnPlayer = player1;
+        firstTurnPlayer = player1;
     }
 
+    public void PreProcessState()
+    {
+        switch (currentState)
+        {
+            case GameStates.NewGame:
+                currentTurnPlayer = firstTurnPlayer;
+                // currentBoard = new();
+                currentBoard = new(new string[,]{
+                    { "X", "O", "X" },
+                    { "X", "O", "O" },
+                    { "O", "X", "." }});
+                return;
+            case GameStates.TieScreen:
+                firstTurnPlayer = GetOtherPlayer(firstTurnPlayer);
+                return;
+            case GameStates.WinnerScreen:
+                currentWinner = GetWinner();
+                currentWinner?.Win();
+                winnerHistory.Add(currentWinner);
+                firstTurnPlayer = GetOtherPlayer(currentWinner);
+                return;
+            default:
+                return;
+        }
+    }
     public void Render()
     {
         string overrideConsoleText = "";
@@ -75,10 +100,7 @@ Alternando entre cada jogador em cada turno";
 
 {player1.Name} vs {player2.Name}
 
-Placar atual:
-{player1.Name}: {player1.WinCount}
-{player2.Name}: {player2.WinCount}
-Velha: {GetTiesCount()}";
+{ScoreAsString()}";
                 break;
             case GameStates.GameTurn:
                 overrideConsoleText =
@@ -96,7 +118,19 @@ Vez do jogador {currentTurnPlayer.Name}.
 certifique de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 para linha.";
                 break;
             case GameStates.NonEmptySpace:
-                overrideConsoleText = @$"Este espaço ({cacheLastCoordsInput.x}, {cacheLastCoordsInput.y}) já está ocupado.";
+                overrideConsoleText =
+@$"Este espaço {Board.FormatCoords(cacheLastCoordsInput)} já está ocupado.
+
+{currentBoard}
+";
+                break;
+            case GameStates.TieScreen:
+                overrideConsoleText =
+@$"Deu velha.
+
+{currentBoard}
+
+{ScoreAsString()}";
                 break;
             case GameStates.WinnerScreen:
                 Player winner = GetWinner();
@@ -107,10 +141,7 @@ certifique de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 p
 
 Parabéns {winner.Name}!
 
-Placar atual:
-{player1.Name}: {player1.WinCount}
-{player2.Name}: {player2.WinCount}
-Velha: {GetTiesCount()}";
+{ScoreAsString()}";
                 break;
             default: break;
         }
@@ -118,10 +149,17 @@ Velha: {GetTiesCount()}";
         Clear();
         WriteLine(overrideConsoleText);
     }
+    string ScoreAsString()
+    {
+        return
+@$"Placar atual:
+{player1.Name}: {player1.WinCount}
+{player2.Name}: {player2.WinCount}
+Velha: {GetTiesCount()}";
+    }
     int GetTiesCount() => winnerHistory.Count(x => x == null);
     public void HandleInput()
     {
-        string text;
         switch (currentState)
         {
             case GameStates.InputNamePlayer1:
@@ -149,7 +187,7 @@ Velha: {GetTiesCount()}";
             input = INPUT_EXIT;
     }
 
-    public void ProcessAfter()
+    public void ProcessInputAndStateChange()
     {
         switch (currentState)
         {
@@ -170,12 +208,13 @@ Velha: {GetTiesCount()}";
                 currentState = GameStates.GameTurn;
                 return;
             case GameStates.GameTurn:
-                if (!Board.TryParseCoords(input, out Vector2Int coords))
+                if (!Board.TryParseCoords(input!, out Vector2Int coords))
                 {
-                    cacheLastCoordsInput = coords;
                     currentState = GameStates.InvalidInput;
                     return;
                 }
+
+                cacheLastCoordsInput = coords;
                 if (!currentBoard.IsSpaceFreeAt(coords))
                 {
                     currentState = GameStates.NonEmptySpace;
@@ -183,14 +222,18 @@ Velha: {GetTiesCount()}";
                 }
 
                 currentBoard.SetElementOnBoard(coords, currentTurnPlayer.Symbol);
-                // Verify if there is a winner
-                if (currentBoard.Winner != null)
+                if (currentBoard.HasGameEnded())
                 {
-                    currentWinner = GetWinner();
-                    currentWinner?.Win();
-                    winnerHistory.Add(currentWinner);
-                    currentState = GameStates.WinnerScreen;
-                    return;
+                    if (currentBoard.Winner == null)
+                    {
+                        currentState = GameStates.TieScreen;
+                        return;
+                    }
+                    else
+                    {
+                        currentState = GameStates.WinnerScreen;
+                        return;
+                    }
                 }
                 else
                 {
@@ -198,10 +241,14 @@ Velha: {GetTiesCount()}";
                     currentState = GameStates.GameTurn;
                     return;
                 }
+            case GameStates.InvalidInput:
+            case GameStates.NonEmptySpace:
+                currentState = GameStates.GameTurn;
+                return;
+            case GameStates.TieScreen:
+                currentState = GameStates.NewGame;
+                return;
             case GameStates.WinnerScreen:
-                // Change current player
-
-                currentTurnPlayer = GetOtherPlayer(currentWinner);
                 currentState = GameStates.NewGame;
                 return;
             default:
