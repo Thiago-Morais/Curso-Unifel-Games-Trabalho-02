@@ -18,6 +18,7 @@ internal class Program
         {
             ticTacToe.Render();
             ticTacToe.HandleInput();
+            ticTacToe.ProcessAfter();
         }
         while (ticTacToe.Input != TicTacToe.INPUT_EXIT);
 

@@ -11,28 +11,26 @@ Segundo trabalho do curso `Desenvolvimento de Jogos_Games_Turma 03` da Unifel.
 ```mermaid
 stateDiagram-v2
     Welcome
-    InputNames
+    InputNamePlayer1
+    InputNamePlayer2
     NewGame
     GameTurn
     InvalidInput
     WinnerScreen
     NonEmptySpace
     state is_there_a_winner <<choice>>
-    is_there_a_winner_no: No Winner
-    is_there_a_winner_yes: There is a winner
 
     [*] --> Welcome
-    Welcome --> InputNames
-    InputNames --> NewGame
+    Welcome --> InputNamePlayer1
+    InputNamePlayer1 --> InputNamePlayer2
+    InputNamePlayer2 --> NewGame
     NewGame --> GameTurn: Player 1 / Loser Player
     GameTurn --> InvalidInput
     InvalidInput --> GameTurn
     GameTurn --> NonEmptySpace
     NonEmptySpace --> GameTurn
     GameTurn --> is_there_a_winner
-    is_there_a_winner --> is_there_a_winner_no
-    is_there_a_winner --> is_there_a_winner_yes
-    is_there_a_winner_no --> GameTurn: Other Player
-    is_there_a_winner_yes --> WinnerScreen
+    is_there_a_winner --> GameTurn : There is NO winner, change players
+    is_there_a_winner --> WinnerScreen : There IS a winner
     WinnerScreen --> NewGame
 ```
