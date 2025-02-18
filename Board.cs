@@ -6,6 +6,20 @@ public partial class Board
 {
     public const string FREE_SPACE = ".";
     string[,] data = new string[3, 3] { { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE } };
+    public static readonly (int, int)[][] WIN_CONDITIONS =
+    [
+        // Rows
+        [(0, 0), (0, 1), (0, 2)],
+        [(1, 0), (1, 1), (1, 2)],
+        [(2, 0), (2, 1), (2, 2)],
+        // Column
+        [(0, 0), (1, 0), (2, 0)],
+        [(0, 1), (1, 1), (2, 1)],
+        [(0, 2), (1, 2), (2, 2)],
+        // Diagonals
+        [(0, 0), (1, 1), (2, 2)],
+        [(0, 2), (1, 1), (2, 0)],
+    ];
     string winner;
     public string[,] Data => data;
     public string Winner => winner;
@@ -18,12 +32,30 @@ public partial class Board
     public void SetElementOnBoard(Vector2Int coords, string value)
     {
         data[coords.x, coords.y] = value;
-        ProcessWinner();
+        winner = CalculateWinnerSymbol();
     }
-    void ProcessWinner()
+
+    string CalculateWinnerSymbol()
     {
-        throw new NotImplementedException();
+        // Go over every win condition and return if there is a winner
+        for (int i = 0; i < WIN_CONDITIONS.Length; i++)
+        {
+            (int x, int y) firstWinCoord = WIN_CONDITIONS[i][0];
+            string possibleWinner = data[firstWinCoord.x, firstWinCoord.y];
+            if (possibleWinner == FREE_SPACE) continue;
+
+            for (int j = 1; j < WIN_CONDITIONS[i].Length; j++)
+            {
+                (int x, int y) coord = WIN_CONDITIONS[i][j];
+                if (data[coord.x, coord.y] != possibleWinner) break;
+
+                bool isLastInnerCondition = j == WIN_CONDITIONS[i].Length - 1;
+                if (isLastInnerCondition) return possibleWinner;
+            }
+        }
+        return null;
     }
+
     public string GetSymbolAt(Vector2Int coords)
     {
         return data[coords.x, coords.y];

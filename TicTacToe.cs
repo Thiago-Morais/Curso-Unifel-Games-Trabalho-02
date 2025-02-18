@@ -117,7 +117,7 @@ Parabéns {winner.Name}!";
     }
     void WaitAnyInput()
     {
-        ConsoleKeyInfo consoleKeyInfo = WaitForAnyKey();
+        ConsoleKeyInfo consoleKeyInfo = WaitForAnyKey("\nAperte qualquer botão para continuar, ou 0 para sair.");
         input = consoleKeyInfo.Key.ToString();
     }
 
