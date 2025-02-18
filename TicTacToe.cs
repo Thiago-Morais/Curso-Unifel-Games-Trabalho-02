@@ -1,11 +1,12 @@
 
 // Trabalho #2 - Jogo da Velha
 // Desenvolva um jogo da Velha.
-// [ ] O jogo da velha é jogado por dois jogadores, onde um vai ser o X e o outro o O.
-// [ ] Ao fazer as jogadas, o jogo deve verificar quem ganhou ou se deu velha.
+//  O jogo da velha é jogado por dois jogadores, onde um vai ser o X e o outro o O.
+// [/] Ao fazer as jogadas, o jogo deve verificar quem ganhou ou se deu velha.
 // [ ] Durante o jogo deve ser possível ver o placar dos jogadores, inclusive a quantidade de vezes que a Velha aconteceu.
 // [x] Também deve ser possível mostrar o tabuleiro do jogo após cada jogada! 
 // [ ] O jogo se encerra ao informar o valor 0.
+
 using static Util;
 using static System.Console;
 
@@ -22,6 +23,8 @@ public class TicTacToe
     int turnPlayerIndex = 1;
     List<Player> winnerHistory = new();
     GameStates currentState;
+    Vector2Int cacheLastCoordsInput;
+
     enum GameStates
     {
         Welcome,
@@ -35,30 +38,30 @@ public class TicTacToe
     }
     public void Render()
     {
-        string text = "";
+        string overrideConsoleText = "";
         switch (currentState)
         {
             case GameStates.Welcome:
-                Board board = new(new string[,]
+                Board exampleBoard = new(new string[,]
                 {
                     { "O", ".", "X" },
                     { "X", "X", "." },
                     { "O", "O", "O" }
                 });
-                text =
+                overrideConsoleText =
 @$"JOGO DA VELHA
 
-{board}
+{exampleBoard}
 
 Nesse jogo você joga com dois jogadores
 Alternando entre cada jogador em cada turno";
                 break;
             case GameStates.InputNamePlayer1:
             case GameStates.InputNamePlayer2:
-                text = @$"Criação de personagem:";
+                overrideConsoleText = @$"Criação de personagem:";
                 break;
             case GameStates.NewGame:
-                text =
+                overrideConsoleText =
 @$"Novo Jogo!
 
 {player1.Name} vs {player2.Name}
@@ -69,28 +72,42 @@ Placar atual:
 Velha: {GetTiesCount()}";
                 break;
             case GameStates.GameTurn:
-                text =
+                overrideConsoleText =
 @$"
-Vez do jogador {player1.Name}.
+Vez do jogador {GetTurnPlayer().Name}.
 
 {currentBoard}
 
 ";
                 break;
+            case GameStates.InvalidInput:
+                overrideConsoleText =
+@$"Entrada inválida.
+
+certifique de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 para linha.";
+                break;
+            case GameStates.NonEmptySpace:
+                overrideConsoleText = @$"Este espaço ({cacheLastCoordsInput.x}, {cacheLastCoordsInput.y}) já está ocupado.";
+                break;
             case GameStates.WinnerScreen:
                 Player winner = GetWinner();
-                text =
+                overrideConsoleText =
 @$"O jogador {winner.Name} ganhou!
 
 {currentBoard}
 
-Parabéns {winner.Name}!";
+Parabéns {winner.Name}!
+
+Placar atual:
+{player1.Name}: {player1.WinCount}
+{player2.Name}: {player2.WinCount}
+Velha: {GetTiesCount()}";
                 break;
             default: break;
         }
 
         Clear();
-        WriteLine(text);
+        WriteLine(overrideConsoleText);
     }
     int GetTiesCount() => winnerHistory.Count(x => x == null);
     public void HandleInput()
@@ -98,16 +115,16 @@ Parabéns {winner.Name}!";
         string text;
         switch (currentState)
         {
-            case GameStates.GameTurn:
-                WriteLine($"\nDigite as coordenadas da sua jogada com a, b ou c para coluna e 1, 2 ou 3 para linha.");
-                input = ReadLine();
-                return;
             case GameStates.InputNamePlayer1:
                 WriteLine("\nDigite o nome do jogador 1:");
                 input = ReadLine();
                 return;
             case GameStates.InputNamePlayer2:
                 WriteLine("\nDigite o nome do jogador 2:");
+                input = ReadLine();
+                return;
+            case GameStates.GameTurn:
+                WriteLine($"\nDigite as coordenadas da sua jogada com a, b ou c para coluna e 1, 2 ou 3 para linha.");
                 input = ReadLine();
                 return;
             default:
@@ -119,6 +136,8 @@ Parabéns {winner.Name}!";
     {
         ConsoleKeyInfo consoleKeyInfo = WaitForAnyKey("\nAperte qualquer botão para continuar, ou 0 para sair.");
         input = consoleKeyInfo.Key.ToString();
+        if (input.Contains(INPUT_EXIT))
+            input = INPUT_EXIT;
     }
 
     public void ProcessAfter()
@@ -145,6 +164,7 @@ Parabéns {winner.Name}!";
                 if (!Board.TryParseCoords(input, out Vector2Int coords))
                 {
                     currentState = GameStates.InvalidInput;
+                    cacheLastCoordsInput = coords;
                     return;
                 }
                 if (currentBoard.GetSymbolAt(coords) != Board.FREE_SPACE)
