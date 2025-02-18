@@ -22,11 +22,11 @@ public class TicTacToe
     Board currentBoard = new();
     Player player1 = new("X");
     Player player2 = new("O");
-    int turnPlayerIndex = 1;
+    Player currentTurnPlayer;
+    Player currentWinner;
     List<Player> winnerHistory = new();
     GameStates currentState;
     Vector2Int cacheLastCoordsInput;
-    private Player currentWinner;
 
     enum GameStates
     {
@@ -39,6 +39,12 @@ public class TicTacToe
         WinnerScreen,
         NonEmptySpace,
     }
+
+    public TicTacToe()
+    {
+        currentTurnPlayer = player1;
+    }
+
     public void Render()
     {
         string overrideConsoleText = "";
@@ -77,7 +83,7 @@ Velha: {GetTiesCount()}";
             case GameStates.GameTurn:
                 overrideConsoleText =
 @$"
-Vez do jogador {GetTurnPlayer().Name}.
+Vez do jogador {currentTurnPlayer.Name}.
 
 {currentBoard}
 
@@ -176,10 +182,13 @@ Velha: {GetTiesCount()}";
                     return;
                 }
 
-                currentBoard.SetElementOnBoard(coords, GetTurnPlayer().Symbol);
+                currentBoard.SetElementOnBoard(coords, currentTurnPlayer.Symbol);
                 // Verify if there is a winner
                 if (currentBoard.Winner != null)
                 {
+                    currentWinner = GetWinner();
+                    currentWinner?.Win();
+                    winnerHistory.Add(currentWinner);
                     currentState = GameStates.WinnerScreen;
                     return;
                 }
@@ -191,19 +200,15 @@ Velha: {GetTiesCount()}";
                 }
             case GameStates.WinnerScreen:
                 // Change current player
-                currentWinner = GetWinner();
-                currentWinner?.Win();
-                winnerHistory.Add(currentWinner);
 
-                GetOtherPlayer(currentWinner);
+                currentTurnPlayer = GetOtherPlayer(currentWinner);
                 currentState = GameStates.NewGame;
                 return;
             default:
                 return;
         }
     }
-    public Player GetTurnPlayer() => turnPlayerIndex == 1 ? player1 : player2;
-    public void SwitchTurnPlayer() => turnPlayerIndex = turnPlayerIndex == 1 ? 2 : 1;
+    public void SwitchTurnPlayer() => currentTurnPlayer = currentTurnPlayer == player1 ? player2 : player1;
     Player GetWinner()
     {
         if (currentBoard.Winner == player1.Symbol)
