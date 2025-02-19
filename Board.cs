@@ -7,7 +7,12 @@ namespace Curso_Unifel_Games_Trabalho_02
     public partial class Board
     {
         public const string FREE_SPACE = ".";
-        readonly string[,] data = new string[3, 3] { { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE }, { FREE_SPACE, FREE_SPACE, FREE_SPACE } };
+        readonly string[,] data = new string[3, 3]
+        {
+            { FREE_SPACE, FREE_SPACE, FREE_SPACE },
+            { FREE_SPACE, FREE_SPACE, FREE_SPACE },
+            { FREE_SPACE, FREE_SPACE, FREE_SPACE }
+        };
         public static readonly (int, int)[][] WIN_CONDITIONS =
         [
             // Rows
@@ -22,9 +27,9 @@ namespace Curso_Unifel_Games_Trabalho_02
             [(0, 0), (1, 1), (2, 2)],
             [(0, 2), (1, 1), (2, 0)],
         ];
-        string winner;
+        string winnerSymbol;
         public string[,] Data => data;
-        public string Winner => winner;
+        public string WinnerSymbol => winnerSymbol;
 
         public Board() { }
         public Board(string[,] data)
@@ -34,44 +39,40 @@ namespace Curso_Unifel_Games_Trabalho_02
         public void SetElementOnBoard(Vector2Int coords, string value)
         {
             data[coords.y, coords.x] = value;
-            winner = CalculateWinnerSymbol();
+            winnerSymbol = CalculateWinnerSymbol();
         }
         string CalculateWinnerSymbol()
         {
             // Go over every win condition and return if there is a winner
             for (int i = 0; i < WIN_CONDITIONS.Length; i++)
             {
-                (int x, int y) firstPossibility = WIN_CONDITIONS[i][0];
-                string possibleWinner = data[firstPossibility.y, firstPossibility.x];
-                if (possibleWinner == FREE_SPACE)
+                (int x, int y) firstPossibileCoord = WIN_CONDITIONS[i][0];
+                string possibleWinnerSymbol = data[firstPossibileCoord.y, firstPossibileCoord.x];
+                if (possibleWinnerSymbol == FREE_SPACE)
                     continue;
 
+                // Compare with the other 2 possible coordinates
                 for (int j = 1; j < WIN_CONDITIONS[i].Length; j++)
                 {
-                    (int x, int y) nextPossibility = WIN_CONDITIONS[i][j];
-                    if (possibleWinner != data[nextPossibility.y, nextPossibility.x])
+                    (int x, int y) nextCoord = WIN_CONDITIONS[i][j];
+                    if (possibleWinnerSymbol != data[nextCoord.y, nextCoord.x])
                         break;
 
-                    bool isLastInnerCondition = j == WIN_CONDITIONS[i].Length - 1;
-                    if (isLastInnerCondition)
-                        return possibleWinner;
+                    bool isLastPossibleCoord = j == WIN_CONDITIONS[i].Length - 1;
+                    if (isLastPossibleCoord)
+                        return possibleWinnerSymbol;
                 }
             }
             return null;
         }
-        public bool HasGameEnded()
+        public bool HasGameEnded() => winnerSymbol != null || !IsThereAnyFreeSpace();
+        bool IsThereAnyFreeSpace()
         {
-            if (winner != null) return true;
-
             for (int i = 0; i < data.GetLength(0); i++)
                 for (int j = 0; j < data.GetLength(1); j++)
                     if (data[j, i] == FREE_SPACE)
-                        return false;
-            return true;
-        }
-        public string GetSymbolAt(Vector2Int coords)
-        {
-            return data[coords.y, coords.x];
+                        return true;
+            return false;
         }
 
         public override string ToString()
@@ -103,7 +104,9 @@ namespace Curso_Unifel_Games_Trabalho_02
         }
         [GeneratedRegex(@"[a-c]")] private static partial Regex ColumnRegex();
         [GeneratedRegex(@"[1-3]")] private static partial Regex RowRegex();
+
         public bool IsSpaceFreeAt(Vector2Int coords) => GetSymbolAt(coords) == FREE_SPACE;
+        public string GetSymbolAt(Vector2Int coords) => data[coords.y, coords.x];
         public static string FormatCoords(Vector2Int coords) => $"({(char)(coords.x + 'a')}, {(char)(coords.y + '1')})";
     }
 }

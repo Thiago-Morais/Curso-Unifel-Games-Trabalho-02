@@ -232,7 +232,7 @@ Velha: {tieCount}";
                         currentState = GameStates.PlayerTurn;
                         return;
                     }
-                    else if (currentBoard.Winner != null)
+                    else if (currentBoard.WinnerSymbol != null)
                     {
                         currentState = GameStates.WinnerScreen;
                         return;
@@ -257,9 +257,9 @@ Velha: {tieCount}";
         public void RotateTurnPlayer() => currentTurnPlayer = currentTurnPlayer == player1 ? player2 : player1;
         Player GetWinner()
         {
-            if (currentBoard.Winner == player1.Symbol)
+            if (currentBoard.WinnerSymbol == player1.Symbol)
                 return player1;
-            else if (currentBoard.Winner == player2.Symbol)
+            else if (currentBoard.WinnerSymbol == player2.Symbol)
                 return player2;
             return null;
         }

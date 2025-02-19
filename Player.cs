@@ -4,19 +4,19 @@ namespace Curso_Unifel_Games_Trabalho_02
     {
         readonly string symbol;
         string name;
-        int score;
+        int winCount;
 
         public string Symbol => symbol;
         public string Name => name;
-        public int WinCount => score;
+        public int WinCount => winCount;
 
-        public Player(string symbol, string name = null, int score = 0)
+        public Player(string symbol, string name = null, int winCount = 0)
         {
             this.symbol = symbol;
             this.name = name;
-            this.score = score;
+            this.winCount = winCount;
         }
-        public void IncreaseScore() => score++;
+        public void IncreaseScore() => winCount++;
         public void SetName(string name) => this.name = name;
     }
 }
