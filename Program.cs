@@ -13,7 +13,6 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        Console.WriteLine($"test");
         TicTacToe ticTacToe = new();
 
         do
@@ -27,6 +26,5 @@ internal class Program
 
         Console.Clear();
         Console.WriteLine($"Obrigado por jogar!");
-
     }
 }
