@@ -29,6 +29,7 @@ internal class Program
 @$"Obrigado por jogar!
 
 Placar final:
-{ticTacToe.ScoreAsString()}");
+{ticTacToe.ScoreAsString(false)}");
+        ConsoleUtil.WaitForAnyKey("\nAperte qualquer botão para sair.");
     }
 }

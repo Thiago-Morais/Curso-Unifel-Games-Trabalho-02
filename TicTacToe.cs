@@ -150,13 +150,15 @@ Parabéns {winner.Name}!
             Clear();
             WriteLine(overrideConsoleText);
         }
-        public string ScoreAsString()
+        public string ScoreAsString(bool withTitle = true)
         {
-            return
-@$"Placar atual:
-{player1.Name}: {player1.WinCount}
+            string text = "";
+            if (withTitle) text += "Placar atual:\n";
+            text +=
+$@"{player1.Name}: {player1.WinCount}
 {player2.Name}: {player2.WinCount}
 Velha: {tieCount}";
+            return text;
         }
 
         public void HandleInput()
