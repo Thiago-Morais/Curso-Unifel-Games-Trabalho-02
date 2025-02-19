@@ -19,15 +19,17 @@ namespace Curso_Unifel_Games_Trabalho_02
         string input;
         public string Input { get => input; set => input = value; }
 
-        Board currentBoard = new();
         readonly Player player1 = new("X");
         readonly Player player2 = new("O");
         Player firstTurnPlayer;
         Player currentTurnPlayer;
         Player currentWinner;
+
+        Board currentBoard = new();
+        Vector2Int cacheLastCoordsInput;
+
         int tieCount;
         GameStates currentState;
-        Vector2Int cacheLastCoordsInput;
 
         enum GameStates
         {
@@ -35,12 +37,13 @@ namespace Curso_Unifel_Games_Trabalho_02
             InputNamePlayer1,
             InputNamePlayer2,
             NewGame,
-            GameTurn,
+            PlayerTurn,
             InvalidInput,
             TieScreen,
             WinnerScreen,
             NonEmptySpace,
         }
+
         public TicTacToe()
         {
             firstTurnPlayer = player1;
@@ -53,34 +56,22 @@ namespace Curso_Unifel_Games_Trabalho_02
                 case GameStates.NewGame:
                     currentTurnPlayer = firstTurnPlayer;
                     currentBoard = new();
-                    // Test tie
-                    // currentBoard = new(new string[,]{
-                    //     { "X", "O", "X" },
-                    //     { "X", "O", "." },
-                    //     { "O", "X", "O" }});
-                    // Test win
-                    // currentBoard = new(new string[,]{
-                    //     { "X", "O", "X" },
-                    //     { "X", "O", "O" },
-                    //     { ".", "X", "O" }});
-                    // currentBoard = new(new string[,]{
-                    //     { "O", "O", "." },
-                    //     { ".", "X", "." },
-                    //     { "X", ".", "O" }});
                     return;
                 case GameStates.TieScreen:
-                    firstTurnPlayer = GetOtherPlayer(firstTurnPlayer);
+                    firstTurnPlayer = GetOtherPlayerFrom(firstTurnPlayer);
                     tieCount++;
                     return;
                 case GameStates.WinnerScreen:
                     currentWinner = GetWinner();
-                    currentWinner?.Win();
-                    firstTurnPlayer = GetOtherPlayer(currentWinner);
+                    currentWinner?.IncreaseScore();
+                    firstTurnPlayer = GetOtherPlayerFrom(currentWinner);
                     return;
                 default:
                     return;
             }
         }
+        Player GetOtherPlayerFrom(Player player) => player == player1 ? player2 : player1;
+
         public void Render()
         {
             string overrideConsoleText = "";
@@ -113,20 +104,19 @@ Alternando entre cada jogador em cada turno";
 
 {ScoreAsString()}";
                     break;
-                case GameStates.GameTurn:
+                case GameStates.PlayerTurn:
                     overrideConsoleText =
 @$"
 Vez do jogador {currentTurnPlayer.Name}.
 
 {currentBoard}
-
 ";
                     break;
                 case GameStates.InvalidInput:
                     overrideConsoleText =
 @$"Entrada inválida.
 
-certifique de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 para linha.";
+Certifique-se de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 para linha.";
                     break;
                 case GameStates.NonEmptySpace:
                     overrideConsoleText =
@@ -168,6 +158,7 @@ Parabéns {winner.Name}!
 {player2.Name}: {player2.WinCount}
 Velha: {tieCount}";
         }
+
         public void HandleInput()
         {
             switch (currentState)
@@ -180,7 +171,7 @@ Velha: {tieCount}";
                     WriteLine("\nDigite o nome do jogador 2:");
                     input = ReadLine();
                     return;
-                case GameStates.GameTurn:
+                case GameStates.PlayerTurn:
                     WriteLine($"\nDigite as coordenadas da sua jogada com a, b ou c para coluna e 1, 2 ou 3 para linha.");
                     input = ReadLine();
                     return;
@@ -193,6 +184,7 @@ Velha: {tieCount}";
         {
             ConsoleKeyInfo consoleKeyInfo = WaitForAnyKey("\nAperte qualquer botão para continuar, ou 0 para sair.");
             input = consoleKeyInfo.Key.ToString();
+            // Hack to format ConsoleKey into their corresponding string
             if (input.Contains(INPUT_EXIT))
                 input = INPUT_EXIT;
         }
@@ -205,8 +197,10 @@ Velha: {tieCount}";
                     currentState = GameStates.InputNamePlayer1;
                     return;
                 case GameStates.InputNamePlayer1:
-                    if (input != "") player1.SetName(input);
-                    else player1.SetName(DEFAULT_PLAYER_1_NAME);
+                    if (input != "")
+                        player1.SetName(input);
+                    else
+                        player1.SetName(DEFAULT_PLAYER_1_NAME);
                     currentState = GameStates.InputNamePlayer2;
                     return;
                 case GameStates.InputNamePlayer2:
@@ -215,10 +209,10 @@ Velha: {tieCount}";
                     currentState = GameStates.NewGame;
                     return;
                 case GameStates.NewGame:
-                    currentState = GameStates.GameTurn;
+                    currentState = GameStates.PlayerTurn;
                     return;
-                case GameStates.GameTurn:
-                    if (!Board.TryParseCoords(input!, out Vector2Int coords))
+                case GameStates.PlayerTurn:
+                    if (!Board.TryParseCoords(input, out Vector2Int coords))
                     {
                         currentState = GameStates.InvalidInput;
                         return;
@@ -232,40 +226,35 @@ Velha: {tieCount}";
                     }
 
                     currentBoard.SetElementOnBoard(coords, currentTurnPlayer.Symbol);
-                    if (currentBoard.HasGameEnded())
+                    if (!currentBoard.HasGameEnded())
                     {
-                        if (currentBoard.Winner == null)
-                        {
-                            currentState = GameStates.TieScreen;
-                            return;
-                        }
-                        else
-                        {
-                            currentState = GameStates.WinnerScreen;
-                            return;
-                        }
+                        RotateTurnPlayer();
+                        currentState = GameStates.PlayerTurn;
+                        return;
+                    }
+                    else if (currentBoard.Winner != null)
+                    {
+                        currentState = GameStates.WinnerScreen;
+                        return;
                     }
                     else
                     {
-                        SwitchTurnPlayer();
-                        currentState = GameStates.GameTurn;
+                        currentState = GameStates.TieScreen;
                         return;
                     }
                 case GameStates.InvalidInput:
                 case GameStates.NonEmptySpace:
-                    currentState = GameStates.GameTurn;
-                    return;
-                case GameStates.TieScreen:
-                    currentState = GameStates.NewGame;
+                    currentState = GameStates.PlayerTurn;
                     return;
                 case GameStates.WinnerScreen:
+                case GameStates.TieScreen:
                     currentState = GameStates.NewGame;
                     return;
                 default:
                     return;
             }
         }
-        public void SwitchTurnPlayer() => currentTurnPlayer = currentTurnPlayer == player1 ? player2 : player1;
+        public void RotateTurnPlayer() => currentTurnPlayer = currentTurnPlayer == player1 ? player2 : player1;
         Player GetWinner()
         {
             if (currentBoard.Winner == player1.Symbol)
@@ -274,6 +263,5 @@ Velha: {tieCount}";
                 return player2;
             return null;
         }
-        Player GetOtherPlayer(Player player) => player == player1 ? player2 : player1;
     }
 }

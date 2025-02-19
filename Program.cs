@@ -11,7 +11,7 @@ using Curso_Unifel_Games_Trabalho_02;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    static void Main(string[] args)
     {
         TicTacToe ticTacToe = new();
 

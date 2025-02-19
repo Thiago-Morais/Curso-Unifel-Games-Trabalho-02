@@ -16,7 +16,7 @@ namespace Curso_Unifel_Games_Trabalho_02
             this.name = name;
             this.score = score;
         }
-        public void Win() => score++;
+        public void IncreaseScore() => score++;
         public void SetName(string name) => this.name = name;
     }
 }

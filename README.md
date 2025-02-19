@@ -14,7 +14,7 @@ stateDiagram-v2
     InputNamePlayer1
     InputNamePlayer2
     NewGame
-    GameTurn
+    PlayerTurn
     InvalidInput
     TieScreen
     WinnerScreen
@@ -26,13 +26,13 @@ stateDiagram-v2
     Welcome --> InputNamePlayer1
     InputNamePlayer1 --> InputNamePlayer2
     InputNamePlayer2 --> NewGame: Player 1 starts
-    NewGame --> GameTurn
-    GameTurn --> InvalidInput
-    InvalidInput --> GameTurn
-    GameTurn --> NonEmptySpace
-    NonEmptySpace --> GameTurn
-    GameTurn --> has_game_ended
-    has_game_ended --> GameTurn : Game has not yet ended, change players
+    NewGame --> PlayerTurn
+    PlayerTurn --> InvalidInput
+    InvalidInput --> PlayerTurn
+    PlayerTurn --> NonEmptySpace
+    NonEmptySpace --> PlayerTurn
+    PlayerTurn --> has_game_ended
+    has_game_ended --> PlayerTurn : Game has not yet ended, change players
     has_game_ended --> is_there_a_winner : Game ended
     is_there_a_winner --> TieScreen : There is NO winner
     is_there_a_winner --> WinnerScreen : There IS a winner
