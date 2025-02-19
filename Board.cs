@@ -41,23 +41,28 @@ namespace Curso_Unifel_Games_Trabalho_02
             // Go over every win condition and return if there is a winner
             for (int i = 0; i < WIN_CONDITIONS.Length; i++)
             {
-                (int x, int y) = WIN_CONDITIONS[i][0];
-                string possibleWinner = data[y, x];
-                if (possibleWinner == FREE_SPACE) continue;
+                (int x, int y) firstPossibility = WIN_CONDITIONS[i][0];
+                string possibleWinner = data[firstPossibility.y, firstPossibility.x];
+                if (possibleWinner == FREE_SPACE)
+                    continue;
 
                 for (int j = 1; j < WIN_CONDITIONS[i].Length; j++)
                 {
-                    (int x, int y) coord = WIN_CONDITIONS[i][j];
-                    if (data[coord.y, coord.x] != possibleWinner) break;
+                    (int x, int y) nextPossibility = WIN_CONDITIONS[i][j];
+                    if (possibleWinner != data[nextPossibility.y, nextPossibility.x])
+                        break;
 
                     bool isLastInnerCondition = j == WIN_CONDITIONS[i].Length - 1;
-                    if (isLastInnerCondition) return possibleWinner;
+                    if (isLastInnerCondition)
+                        return possibleWinner;
                 }
             }
             return null;
         }
         public bool HasGameEnded()
         {
+            if (winner != null) return true;
+
             for (int i = 0; i < data.GetLength(0); i++)
                 for (int j = 0; j < data.GetLength(1); j++)
                     if (data[j, i] == FREE_SPACE)
@@ -72,13 +77,13 @@ namespace Curso_Unifel_Games_Trabalho_02
         public override string ToString()
         {
             return
-    @$"╔ a ╦ b ╦ c ╗
-    1 {data[0, 0]} ║ {data[0, 1]} ║ {data[0, 2]} ║
-    ╠═══╬═══╬═══╣
-    2 {data[1, 0]} ║ {data[1, 1]} ║ {data[1, 2]} ║
-    ╠═══╬═══╬═══╣
-    3 {data[2, 0]} ║ {data[2, 1]} ║ {data[2, 2]} ║
-    ╚═══╩═══╩═══╝";
+@$"╔ a ╦ b ╦ c ╗
+1 {data[0, 0]} ║ {data[0, 1]} ║ {data[0, 2]} ║
+╠═══╬═══╬═══╣
+2 {data[1, 0]} ║ {data[1, 1]} ║ {data[1, 2]} ║
+╠═══╬═══╬═══╣
+3 {data[2, 0]} ║ {data[2, 1]} ║ {data[2, 2]} ║
+╚═══╩═══╩═══╝";
         }
 
         public static bool TryParseCoords(string coordsText, out Vector2Int coordsInt)

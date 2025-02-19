@@ -7,7 +7,7 @@
 // [x] O jogo se encerra ao informar o valor 0.
 namespace Curso_Unifel_Games_Trabalho_02
 {
-    using static Util;
+    using static ConsoleUtil;
     using static System.Console;
 
     public class TicTacToe
@@ -25,7 +25,7 @@ namespace Curso_Unifel_Games_Trabalho_02
         Player firstTurnPlayer;
         Player currentTurnPlayer;
         Player currentWinner;
-        readonly List<Player> winnerHistory = [];
+        int tieCount;
         GameStates currentState;
         Vector2Int cacheLastCoordsInput;
 
@@ -63,14 +63,18 @@ namespace Curso_Unifel_Games_Trabalho_02
                     //     { "X", "O", "X" },
                     //     { "X", "O", "O" },
                     //     { ".", "X", "O" }});
+                    // currentBoard = new(new string[,]{
+                    //     { "O", "O", "." },
+                    //     { ".", "X", "." },
+                    //     { "X", ".", "O" }});
                     return;
                 case GameStates.TieScreen:
                     firstTurnPlayer = GetOtherPlayer(firstTurnPlayer);
+                    tieCount++;
                     return;
                 case GameStates.WinnerScreen:
                     currentWinner = GetWinner();
                     currentWinner?.Win();
-                    winnerHistory.Add(currentWinner);
                     firstTurnPlayer = GetOtherPlayer(currentWinner);
                     return;
                 default:
@@ -90,7 +94,7 @@ namespace Curso_Unifel_Games_Trabalho_02
                     { "O", "O", "O" }
                     });
                     overrideConsoleText =
-    @$"JOGO DA VELHA
+@$"JOGO DA VELHA
 
 {exampleBoard}
 
@@ -103,7 +107,7 @@ Alternando entre cada jogador em cada turno";
                     break;
                 case GameStates.NewGame:
                     overrideConsoleText =
-    @$"Novo Jogo!
+@$"Novo Jogo!
 
 {player1.Name} vs {player2.Name}
 
@@ -111,7 +115,7 @@ Alternando entre cada jogador em cada turno";
                     break;
                 case GameStates.GameTurn:
                     overrideConsoleText =
-    @$"
+@$"
 Vez do jogador {currentTurnPlayer.Name}.
 
 {currentBoard}
@@ -120,20 +124,20 @@ Vez do jogador {currentTurnPlayer.Name}.
                     break;
                 case GameStates.InvalidInput:
                     overrideConsoleText =
-    @$"Entrada inválida.
+@$"Entrada inválida.
 
 certifique de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 para linha.";
                     break;
                 case GameStates.NonEmptySpace:
                     overrideConsoleText =
-    @$"Este espaço {Board.FormatCoords(cacheLastCoordsInput)} já está ocupado.
+@$"Este espaço {Board.FormatCoords(cacheLastCoordsInput)} já está ocupado.
 
 {currentBoard}
 ";
                     break;
                 case GameStates.TieScreen:
                     overrideConsoleText =
-    @$"Deu velha.
+@$"Deu velha.
 
 {currentBoard}
 
@@ -142,7 +146,7 @@ certifique de que suas coordenadas contenham a, b ou c para coluna e 1, 2 ou 3 p
                 case GameStates.WinnerScreen:
                     Player winner = GetWinner();
                     overrideConsoleText =
-    @$"O jogador {winner.Name} ganhou!
+@$"O jogador {winner.Name} ganhou!
 
 {currentBoard}
 
@@ -159,12 +163,11 @@ Parabéns {winner.Name}!
         string ScoreAsString()
         {
             return
-    @$"Placar atual:
+@$"Placar atual:
 {player1.Name}: {player1.WinCount}
 {player2.Name}: {player2.WinCount}
-Velha: {GetTiesCount()}";
+Velha: {tieCount}";
         }
-        int GetTiesCount() => winnerHistory.Count(x => x == null);
         public void HandleInput()
         {
             switch (currentState)
