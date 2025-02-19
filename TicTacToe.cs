@@ -2,7 +2,7 @@
 // Desenvolva um jogo da Velha.
 //  O jogo da velha é jogado por dois jogadores, onde um vai ser o X e o outro o O.
 // [x] Ao fazer as jogadas, o jogo deve verificar quem ganhou ou se deu velha.
-// [/] Durante o jogo deve ser possível ver o placar dos jogadores, inclusive a quantidade de vezes que a Velha aconteceu.
+// [x] Durante o jogo deve ser possível ver o placar dos jogadores, inclusive a quantidade de vezes que a Velha aconteceu.
 // [x] Também deve ser possível mostrar o tabuleiro do jogo após cada jogada! 
 // [x] O jogo se encerra ao informar o valor 0.
 namespace Curso_Unifel_Games_Trabalho_02
@@ -150,7 +150,7 @@ Parabéns {winner.Name}!
             Clear();
             WriteLine(overrideConsoleText);
         }
-        string ScoreAsString()
+        public string ScoreAsString()
         {
             return
 @$"Placar atual:

@@ -25,6 +25,10 @@ internal class Program
         while (ticTacToe.Input != TicTacToe.INPUT_EXIT);
 
         Console.Clear();
-        Console.WriteLine($"Obrigado por jogar!");
+        Console.WriteLine(
+@$"Obrigado por jogar!
+
+Placar final:
+{ticTacToe.ScoreAsString()}");
     }
 }
